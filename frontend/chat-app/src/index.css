@@ -6,11 +6,12 @@
 
 
 :root{
-  --font-heading: 'Outfit', sans-serif;
+  --font-heading: 'OutfitB', sans-serif;
 }
 
 @layer base {
   body {
-    @apply min-h-screen bg-[#7d8a6e] m-0;
+    @apply min-h-screen bg-[#7c94b8] m-0;
+    @apply overflow-hidden;
   }
 }
