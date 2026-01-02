@@ -7,6 +7,7 @@ const Chat = () => {
     ]);
     const [input, setInput] = useState("");
     const bottomRef = useRef(null);
+    const [autoScroll, setAutoScroll] = useState(true);
 
     const sendMessage = () =>{
         if(!input.trim()) return;
@@ -20,8 +21,10 @@ const Chat = () => {
     };
 
     useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
+    if (autoScroll) {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    }, [messages, autoScroll]);
 
     useEffect(() => {
     const last = messages[messages.length - 1];
@@ -36,7 +39,7 @@ const Chat = () => {
     }, [messages]);
 
   return (
-    <div className='min-h-screen flex flex-col'>
+    <div className='h-screen flex flex-col overflow-hidden'>
 
       <header className='py-6 border-b border-[#1a396f] text-left shadow-md flex items-center'>
         <img 
@@ -49,7 +52,18 @@ const Chat = () => {
       </h1>
       </header>
       
-        <main className="flex-1 px-6 py-4 overflow-y-auto">
+        <main 
+        className="flex-1 px-6 py-4 overflow-y-auto"
+        onScroll={(e) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+
+        // Are we close to the bottom?
+        const isNearBottom =
+        scrollHeight - scrollTop - clientHeight < 50;
+
+        setAutoScroll(isNearBottom);
+        }}
+        >
         <div className="max-w-4xl mx-auto space-y-4">
         {messages.map((msg, index) => (
             <div
