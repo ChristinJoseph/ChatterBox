@@ -9,8 +9,10 @@ const Chat = () => {
     const bottomRef = useRef(null);
     const [autoScroll, setAutoScroll] = useState(true);
 
-    const sendMessage = () =>{
+    const sendMessage =async () =>{
         if(!input.trim()) return;
+
+        const userText = input;
 
         setMessages((prev)=>[
             ...prev,
@@ -18,6 +20,26 @@ const Chat = () => {
         ]);
 
         setInput("");
+
+          try {
+                const res = await fetch("http://localhost:5000/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userText }),
+          });
+
+          const data = await res.json();
+
+              setMessages((prev) => [
+                ...prev,
+                { role: "bot", text: data.reply }
+              ]);
+            } catch (err) {
+              setMessages((prev) => [
+                ...prev,
+                { role: "bot", text: "Server error ❌" }
+              ]);
+            }
     };
 
     useEffect(() => {
@@ -26,17 +48,6 @@ const Chat = () => {
     }
     }, [messages, autoScroll]);
 
-    useEffect(() => {
-    const last = messages[messages.length - 1];
-    if (!last || last.role !== "user") return;
-
-    setTimeout(() => {
-        setMessages((prev) => [
-        ...prev,
-        { role: "bot", text: "🤖 :Hi, Please wait I'm being Developed" }
-        ]);
-    }, 600);
-    }, [messages]);
 
   return (
     <div className='h-screen flex flex-col overflow-hidden'>
