@@ -1,14 +1,22 @@
+import { getLLMReply } from "../services/llmservices.js";
+
 export const handleChat = async(req,res) =>{
+    try {
     const {message} = req.body;
 
     if(!message)
     {
-        return req.status(400).json({error:"Message Required"});
+        return res.status(400).json({error:"Message Required"});
     }
 
+    const reply = await getLLMReply(message);
 
-    //temp reply
-    const reply = `You said: ${message}`;
+    res.json({ reply });
+    } catch (err) {
 
-    res.json({reply});
-}
+    console.error(err);
+        res.status(500).json({
+        reply: "Model is Loading, Please try again later after sometime.",
+        });
+    }
+};
