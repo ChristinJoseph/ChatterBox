@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
+import Sidebar from "./Sidebar";
+import ReactMarkdown from "react-markdown";
+
 
 const Chat = () => {
 
@@ -8,9 +11,10 @@ const Chat = () => {
     const [input, setInput] = useState("");
     const bottomRef = useRef(null);
     const [autoScroll, setAutoScroll] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
     const sendMessage =async () =>{
-        if(!input.trim()) return;
+        if(!input.trim()|| isLoading) return;
 
         const userText = input;
 
@@ -20,6 +24,7 @@ const Chat = () => {
         ]);
 
         setInput("");
+        setIsLoading(true);
 
           try {
                 const res = await fetch("http://localhost:5000/api/chat", {
@@ -37,8 +42,10 @@ const Chat = () => {
             } catch (err) {
               setMessages((prev) => [
                 ...prev,
-                { role: "bot", text: "Server error ❌" }
+                { role: "bot", text: "Server Issue, Please Try Again ❌" }
               ]);
+            }finally {
+             setIsLoading(false);
             }
     };
 
@@ -50,17 +57,18 @@ const Chat = () => {
 
 
   return (
-    <div className='h-screen flex flex-col overflow-hidden'>
-
-      <header className='py-6 border-b border-[#1a396f] text-left shadow-md flex items-center'>
-        <img 
-        src="src\assets\bot1.png" 
+    <div className='h-screen flex overflow-hidden'>
+      <Sidebar />
+      <div className="flex-1 flex flex-col">
+      <header className='py-10 border-[#1a396f] text-left flex items-center'>
+        {/* <img 
+        src="src\assets\bot2.png" 
         alt="ChatterBot Logo" 
         className="w-12 h-12 mx-4 inline-block align-middle"
         />
-      <h1 className="font-['Outfit'] font-extrabold text-3xl text-[#1a396f] px-1 py-2">
+      <h1 className="font-['Outfit'] font-extrabold text-3xl text-[#f9e9da] px-1 py-2">
         ChatterBot
-      </h1>
+      </h1> */}
       </header>
       
         <main 
@@ -79,20 +87,32 @@ const Chat = () => {
         {messages.map((msg, index) => (
             <div
             key={index}
-            className={`max-w-md p-3 rounded-lg ${
+            className={`max-w-md p-3 rounded-lg shadow-sm transition-all duration-200 ease-out max-w-[70%] hover:-translate-y-[1px]  ${
                 msg.role === "user"
-                ? "ml-auto bg-[#1a396f] text-white"
-                : "bg-[#b1bbc7]"
+                ? "ml-auto bg-[#c3d8c5] text-[#272727]"
+                : "bg-[#7a8450] text-[#f9e9da]"
             }`}
             >
-            <p>{msg.text}</p>
+            <div className="prose prose-sm max-w-none leading-relaxed font-['Rubik']">
+            <ReactMarkdown>
+              {msg.text}
+            </ReactMarkdown>
+          </div>
+
             </div>
         ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-[#7a8450] px-4 py-2 rounded-lg shadow-sm">
+              <span className="animate-pulse">Thinking...</span>
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
         </div>
       </main>
 
-      <footer className="border-t border-[#1a396f] p-4 shadow-md">
+      <footer className="x border-[#1a396f] p-4 shadow-md">
         <div className="max-w-6xl mx-auto flex gap-3">
             <input 
             type="text"
@@ -100,17 +120,19 @@ const Chat = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e)=> e.key ==="Enter" && sendMessage()}
             placeholder = "Type your Message..."
-            className='flex-1 px-4 py-2 rounded-md outline-none bg-[#b1bbc7] placeholder:text-gray-800 text-gray-900'>
+            disabled={isLoading}
+            className='flex-1 px-4 py-2 rounded-md outline-none bg-[#f9e9da] placeholder:text-gray-800 text-gray-900'>
             </input>
             <button 
             onClick ={sendMessage}
-            className="px-5 py-2 rounded-md bg-[#b1bbc7] text-gray-800 font-semibold active:scale-95 transition-transform ">
+            disabled={isLoading}
+            className="px-5 py-2 rounded-md bg-[#f9e9da] text-gray-800 font-semibold active:scale-95 transition-transform ">
             Send
           </button>
         </div>
 
       </footer>
-      
+      </div>
 
     </div>
   )
